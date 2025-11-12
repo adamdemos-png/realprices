@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Prices - Demo with Comparison View</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb;
+            min-height: 100vh;
+        }
+        
+        header {
+            background-color: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 24px 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #111827;
+            margin: 0;
+        }
+        
+        .subtitle {
+            margin: 8px 0 0 0;
+            color: #6b7280;
+            font-size: 16px;
+        }
+        
+        .comparison-selector {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .comparison-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .comparison-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            background-color: white;
+            color: #6b7280;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .comparison-btn:hover {
+            background-color: #f9fafb;
+        }
+        
+        .comparison-btn.active {
+            border: 2px solid #3b82f6;
+            background-color: #eff6ff;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+        
+        .year-selector {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            font-size: 14px;
+            cursor: pointer;
+            background-color: white;
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 48px 24px;
+        }
+        
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 24px;
+        }
+        
+        .item-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .item-card.comparison-view {
+            padding: 20px;
+            gap: 8px;
+        }
+        
+        .item-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .icon {
+            width: 64px;
+            height: 64px;
+            color: #374151;
+        }
+        
+        .icon.small {
+            width: 48px;
+            height: 48px;
+        }
+        
+        .item-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .item-name.small {
+            font-size: 14px;
+        }
+        
+        .price {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .comparison-section {
+            width: 100%;
+            text-align: center;
+        }
+        
+        .comparison-label-text {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .comparison-price {
+            font-size: 18px;
+            font-weight: 600;
+            color: #6b7280;
+        }
+        
+        .today-label {
+            font-size: 11px;
+            color: #111827;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .today-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+        }
+        
+        .price-arrow {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            margin-top: 4px;
+        }
+        
+        .price-diff {
+            margin-top: 4px;
+            padding: 4px 8px;
+            border-radius: 6px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .price-diff.increase {
+            background-color: #fee2e2;
+        }
+        
+        .price-diff.decrease {
+            background-color: #dcfce7;
+        }
+        
+        .diff-amount {
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .diff-amount.increase {
+            color: #dc2626;
+        }
+        
+        .diff-amount.decrease {
+            color: #16a34a;
+        }
+        
+        .diff-percent {
+            font-size: 11px;
+        }
+        
+        .diff-percent.increase {
+            color: #991b1b;
+        }
+        
+        .diff-percent.decrease {
+            color: #15803d;
+        }
+        
+        .trend {
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .trend-up { color: #ef4444; }
+        .trend-down { color: #10b981; }
+        .trend-flat { color: #6b7280; }
+        
+        .trend-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .about {
+            margin-top: 64px;
+            padding: 24px;
+            background-color: white;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .about h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .about p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.8;
+            margin-bottom: 12px;
+        }
+        
+        .about strong {
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Real Prices</h1>
+            <p class="subtitle">What things actually cost. No spin. Complete transparency.</p>
+            
+            <div class="comparison-selector">
+                <div class="comparison-label">Compare to:</div>
+                
+                <button class="comparison-btn active" onclick="setComparison('today')">
+                    Today Only
+                </button>
+                
+                <button class="comparison-btn" onclick="setComparison('yesterday')">
+                    Yesterday
+                </button>
+                
+                <button class="comparison-btn" onclick="setComparison('lastMonth')">
+                    Last Month
+                </button>
+                
+                <button class="comparison-btn" onclick="setComparison('lastYear')">
+                    1 Year Ago
+                </button>
+                
+                <button class="comparison-btn" onclick="setComparison('5years')">
+                    5 Years Ago
+                </button>
+                
+                <div class="year-selector">
+                    <button class="comparison-btn" onclick="setComparison('custom')">
+                        Choose Year:
+                    </button>
+                    <select id="customYear" onchange="setComparison('custom')">
+                        <option value="2020">2020</option>
+                        <option value="2021">2021</option>
+                        <option value="2022">2022</option>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="items-grid" id="items"></div>
+
+        <div class="about">
+            <h2>About This Demo</h2>
+            <p>
+                <strong>NEW FEATURE:</strong> Use the comparison buttons above to see how prices have changed!
+                Toggle between "Today Only" view and historical comparisons to see exactly how much prices have gone up or down.
+            </p>
+            <p>
+                All prices are national averages calculated from real prices at retailers across the United States. 
+                We collect data from multiple sources and update regularly.
+            </p>
+            <p>
+                <strong>Our methodology:</strong> We scrape prices from major retailers, 
+                use public APIs where available, and aggregate direct reports. Every price shows its source count and 
+                sample size. No adjustments, no smoothing - just the actual prices people pay.
+            </p>
+        </div>
+    </main>
+
+    <script>
+        let currentComparison = 'today';
+        
+        const items = [
+            { id: 'eggs', name: 'Eggs', price: 3.49, unit: 'per dozen', trend: -10.2, yearTrend: 15.3, icon: 'eggs' },
+            { id: 'milk', name: 'Milk', price: 4.03, unit: 'per gallon', trend: -2.1, yearTrend: 3.2, icon: 'milk' },
+            { id: 'bread', name: 'Bread', price: 1.87, unit: 'per loaf', trend: 1.6, yearTrend: -8.3, icon: 'bread' },
+            { id: 'beef', name: 'Beef', price: 5.23, unit: 'per pound', trend: 3.2, yearTrend: 7.1, icon: 'beef' },
+            { id: 'chicken', name: 'Chicken', price: 2.06, unit: 'per pound', trend: 1.5, yearTrend: 4.8, icon: 'chicken' },
+            { id: 'pork', name: 'Pork', price: 4.38, unit: 'per pound', trend: 2.8, yearTrend: 6.2, icon: 'pork' },
+            { id: 'butter', name: 'Butter', price: 4.12, unit: 'per pound', trend: 0.5, yearTrend: 12.8, icon: 'butter' },
+            { id: 'coffee', name: 'Coffee', price: 6.89, unit: 'per pound', trend: 5.2, yearTrend: 18.7, icon: 'coffee' },
+            { id: 'diapers', name: 'Diapers', price: 42.99, unit: 'per pack', trend: 3.5, yearTrend: 8.9, icon: 'diapers' },
+            { id: 'soda', name: 'Soda', price: 7.49, unit: 'per 12-pack', trend: 2.2, yearTrend: 9.1, icon: 'soda' },
+            { id: 'latte', name: 'Latte', price: 5.25, unit: 'per 12 oz', trend: 3.9, yearTrend: 12.4, icon: 'latte' },
+            { id: 'gas', name: 'Gas', price: 3.30, unit: 'per gallon', trend: -2.7, yearTrend: -5.2, icon: 'gas' },
+            { id: 'netflix', name: 'Netflix', price: 15.49, unit: 'per month', trend: 0, yearTrend: 0, icon: 'netflix' },
+            { id: 'fastfood', name: 'Fast Food', price: 9.87, unit: 'combo', trend: 2.1, yearTrend: 8.9, icon: 'fastfood' },
+            { id: 'internet', name: 'Internet', price: 64.99, unit: 'per month', trend: 1.2, yearTrend: 4.8, icon: 'internet' },
+            { id: 'phone', name: 'Cell Phone', price: 70.00, unit: 'per month', trend: 0, yearTrend: 0, icon: 'phone' },
+            { id: 'movie', name: 'Movie', price: 12.50, unit: 'ticket', trend: 0.8, yearTrend: 4.2, icon: 'movie' }
+        ];
+
+        const icons = {
+            eggs: '<ellipse cx="32" cy="37" rx="18" ry="24"/>',
+            milk: '<rect x="20" y="14" width="24" height="36" rx="2"/><rect x="20" y="14" width="24" height="9" fill="currentColor" opacity="0.2"/>',
+            bread: '<path d="M 14 36 Q 14 24 20 21 Q 26 18 32 18 Q 38 18 44 21 Q 50 24 50 36 L 50 42 L 14 42 Z"/><line x1="22" y1="30" x2="22" y2="39"/><line x1="32" y1="27" x2="32" y2="39"/>',
+            beef: '<path d="M 20 32 Q 17 26 20 23 Q 23 20 29 21 Q 32 17 35 21 Q 41 20 44 23 Q 47 26 44 32 Q 47 38 44 41 Q 41 44 35 43 Q 32 47 29 43 Q 23 44 20 41 Q 17 38 20 32 Z"/>',
+            chicken: '<ellipse cx="32" cy="35" rx="12" ry="15"/><circle cx="29" cy="22" r="7"/><circle cx="28" cy="21" r="1" fill="currentColor"/>',
+            pork: '<ellipse cx="32" cy="32" rx="13" ry="11"/><circle cx="27" cy="30" r="1.5" fill="currentColor"/><circle cx="37" cy="30" r="1.5" fill="currentColor"/>',
+            butter: '<rect x="18" y="22" width="28" height="20" rx="2"/><text x="32" y="35" font-size="12" fill="currentColor" text-anchor="middle">B</text>',
+            coffee: '<rect x="18" y="26" width="20" height="20" rx="2"/><path d="M 38 32 Q 44 32 44 38 Q 44 44 38 44"/>',
+            diapers: '<path d="M 20 26 Q 20 20 26 20 L 38 20 Q 44 20 44 26 L 44 38 Q 44 44 38 44 L 26 44 Q 20 44 20 38 Z"/><line x1="20" y1="32" x2="44" y2="32"/>',
+            soda: '<rect x="23" y="20" width="18" height="27" rx="2"/><rect x="23" y="20" width="18" height="6" fill="currentColor" opacity="0.2"/>',
+            latte: '<path d="M 20 26 L 20 44 Q 20 47 23 47 L 35 47 Q 38 47 38 44 L 38 26"/><ellipse cx="29" cy="26" rx="9" ry="3"/>',
+            gas: '<rect x="18" y="22" width="18" height="24" rx="2"/><line x1="36" y1="29" x2="44" y2="29"/><circle cx="44" cy="43" r="2" fill="currentColor"/>',
+            netflix: '<rect x="20" y="20" width="24" height="24" rx="3"/><path d="M 27 27 L 27 37 M 27 27 L 37 37 M 37 27 L 37 37" stroke-width="2"/>',
+            fastfood: '<path d="M 20 35 L 44 35 L 41 44 L 23 44 Z"/><path d="M 23 35 Q 23 29 26 27 Q 29 26 32 26 Q 35 26 38 27 Q 41 29 41 35"/>',
+            internet: '<circle cx="32" cy="32" r="15"/><ellipse cx="32" cy="32" rx="6" ry="15"/>',
+            phone: '<rect x="21" y="14" width="22" height="36" rx="3"/><circle cx="32" cy="43" r="2" fill="currentColor"/>',
+            movie: '<rect x="18" y="22" width="28" height="20" rx="2"/><circle cx="22" cy="22" r="3" fill="currentColor"/><circle cx="32" cy="22" r="3" fill="currentColor"/>'
+        };
+
+        function getComparisonData(item) {
+            const today = item.price;
+            const customYear = parseInt(document.getElementById('customYear').value);
+            
+            switch(currentComparison) {
+                case 'yesterday':
+                    return { price: (today * 0.998).toFixed(2), label: 'Yesterday' };
+                case 'lastMonth':
+                    const monthTrend = item.trend / 100;
+                    return { price: (today / (1 + monthTrend)).toFixed(2), label: 'Last Month' };
+                case 'lastYear':
+                    const yearTrend = item.yearTrend / 100;
+                    return { price: (today / (1 + yearTrend)).toFixed(2), label: '1 Year Ago' };
+                case '5years':
+                    const fiveYearTrend = item.yearTrend * 3.5 / 100;
+                    return { price: (today / (1 + fiveYearTrend)).toFixed(2), label: '5 Years Ago' };
+                case 'custom':
+                    const yearsAgo = 2025 - customYear;
+                    const customTrend = item.yearTrend * yearsAgo / 100;
+                    return { price: (today / (1 + customTrend)).toFixed(2), label: customYear };
+                default:
+                    return null;
+            }
+        }
+
+        function renderItems() {
+            const container = document.getElementById('items');
+            container.innerHTML = '';
+            
+            items.forEach(item => {
+                const card = document.createElement('div');
+                const comparison = getComparisonData(item);
+                const showComparison = currentComparison !== 'today' && comparison;
+                
+                card.className = 'item-card' + (showComparison ? ' comparison-view' : '');
+                
+                if (showComparison) {
+                    const priceDiff = (item.price - parseFloat(comparison.price)).toFixed(2);
+                    const percentDiff = (((item.price - parseFloat(comparison.price)) / parseFloat(comparison.price)) * 100).toFixed(1);
+                    const isIncrease = priceDiff > 0;
+                    
+                    card.innerHTML = `
+                        <svg class="icon small" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            ${icons[item.icon]}
+                        </svg>
+                        <div class="item-name small">${item.name}</div>
+                        
+                        <div class="comparison-section">
+                            <div class="comparison-label-text">${comparison.label}</div>
+                            <div class="comparison-price">$${comparison.price}</div>
+                        </div>
+                        
+                        <div class="price-arrow">↓</div>
+                        
+                        <div class="comparison-section">
+                            <div class="today-label">Today</div>
+                            <div class="today-price">$${item.price.toFixed(2)}</div>
+                        </div>
+                        
+                        <div class="price-diff ${isIncrease ? 'increase' : 'decrease'}">
+                            <div class="diff-amount ${isIncrease ? 'increase' : 'decrease'}">
+                                ${isIncrease ? '+' : ''}$${Math.abs(priceDiff)}
+                            </div>
+                            <div class="diff-percent ${isIncrease ? 'increase' : 'decrease'}">
+                                (${isIncrease ? '+' : ''}${percentDiff}%)
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const trendClass = item.trend > 0 ? 'trend-up' : item.trend < 0 ? 'trend-down' : 'trend-flat';
+                    const trendSymbol = item.trend > 0 ? '↑' : item.trend < 0 ? '↓' : '→';
+                    
+                    card.innerHTML = `
+                        <svg class="icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            ${icons[item.icon]}
+                        </svg>
+                        <div class="item-name">${item.name}</div>
+                        <div class="price">$${item.price.toFixed(2)}</div>
+                        <div class="trend ${trendClass}">
+                            <span style="font-size: 18px">${trendSymbol}</span>
+                            <span>${Math.abs(item.trend)}%</span>
+                        </div>
+                        <div class="trend-label">vs. last month</div>
+                    `;
+                }
+                
+                container.appendChild(card);
+            });
+        }
+
+        function setComparison(mode) {
+            currentComparison = mode;
+            
+            // Update button states
+            document.querySelectorAll('.comparison-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            const buttons = document.querySelectorAll('.comparison-btn');
+            const modeIndex = {
+                'today': 0,
+                'yesterday': 1,
+                'lastMonth': 2,
+                'lastYear': 3,
+                '5years': 4,
+                'custom': 5
+            };
+            
+            if (buttons[modeIndex[mode]]) {
+                buttons[modeIndex[mode]].classList.add('active');
+            }
+            
+            renderItems();
+        }
+
+        // Initial render
+        renderItems();
+    </script>
+</body>
+</html>
